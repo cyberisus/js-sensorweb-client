@@ -43,6 +43,13 @@ var Pages = {
 		location.href = "#chart";
 		Pages.togglePhenomenon(false);
 	},
+        
+        navigateToWizard : function() {
+		Pages.navigateToPage("#wizard-page");
+		location.href = "#wizard";
+		Pages.togglePhenomenon(false);
+                Pages.toggleLegend(false);
+	},
 	
 	toggleLegend : function(active) {
 		if(active) {
@@ -88,6 +95,9 @@ var Pages = {
 			$('[data-target="#chart"]').click(function() {
 				Pages.navigateToChart();
 			});
+                        $('[data-target="#wizard"]').click(function() {
+				Pages.navigateToWizard();
+			});
 		});
 		// navigation
 		Pages.routeToPage();
@@ -104,6 +114,9 @@ var Pages = {
 			break;
 		case "#chart":
 			Pages.navigateToPage("#chart-page");
+			break;
+                case "#wizard":
+			Pages.navigateToPage("#wizard-page");
 			break;
 		default:
 			if (Status.hasTimeseries()) {
