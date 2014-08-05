@@ -108,6 +108,29 @@ footer {
 	height: 100% !important; /* to make overflow-y possible on all screen sizes */
 }
 
+/*
+.lg-content-fixed{
+    width:100%;
+    max-width: 1520px; 
+    min-width: 300px;
+    background-color: yellow;
+    display: inline-block;
+    float: left;
+}   
+.lg-rightPanel-fixed{
+    width: 400px;
+    float: right;
+    background-color: yellowgreen;
+    display: inline-block;
+}
+@media screen and (max-width: 767px) {
+    .lg-content-fixed{
+        width: 100%;
+    }
+} 
+*/
+
+
 .swc-main {
 	height: 100%;
 }

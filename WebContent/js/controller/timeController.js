@@ -67,6 +67,7 @@ var TimeController = {
 				$('#startPicker').datepicker({position:'above'}).on('changeDate', TimeController.evaluateDate);
 				$('#endPicker').datepicker({position:'above'}).on('changeDate', TimeController.evaluateDate);
 				
+                                
 				$('#confirmTimeExtent').click(function(event){
 					var from = moment($('#startPicker').data('date')).startOf('day');
 					var till = moment($('#endPicker').data('date')).endOf('day');

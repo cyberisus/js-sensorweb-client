@@ -100,6 +100,7 @@
 								<!-- <cssSourceFile>libs/bootstrap-full.css</cssSourceFile> -->
 								<cssSourceFile>libs/bootstrap.css</cssSourceFile>
 								<cssSourceFile>libs/datepicker.css</cssSourceFile>
+                                                                <cssSourceFile>libs/dateslider.css</cssSourceFile>
 								<cssSourceFile>offcanvas.css</cssSourceFile>
 								<!-- <cssSourceFile>libs/leaflet-full.css</cssSourceFile> -->
 								<cssSourceFile>libs/leaflet-full.css</cssSourceFile>
@@ -116,13 +117,14 @@
 								<cssSourceFile>animation.css</cssSourceFile>
 								<cssSourceFile>table.css</cssSourceFile>
 								<cssSourceFile>guidedtour.css</cssSourceFile>
+                                                                <cssSourceFile>nouislider.css</cssSourceFile>
                                                                 <cssSourceFile>wizard.css</cssSourceFile>
 							</cssSourceFiles>
 							<cssFinalFile>jsc.${project.version}.css</cssFinalFile>
 							<jsSourceFiles>
 							    <!-- <jsSourceFile>libs/jquery-2.0.3.js</jsSourceFile> -->
 							    <jsSourceFile>libs/jquery-1.10.2.js</jsSourceFile>
-							    <!-- <jsSourceFile>libs/jquery-1.11.0.js</jsSourceFile> -->
+                                                            <!-- <jsSourceFile>libs/jquery-1.11.0.js</jsSourceFile> -->
 							    <!-- <jsSourceFile>libs/bootstrap-full.js</jsSourceFile> -->
 							    <jsSourceFile>libs/bootstrap.js</jsSourceFile>
 							    <jsSourceFile>libs/bootstrap-datepicker.js</jsSourceFile>
@@ -136,9 +138,10 @@
 							    <jsSourceFile>libs/jquery.total-storage.js</jsSourceFile>
 							    <jsSourceFile>libs/mustache.js</jsSourceFile>
 							    <jsSourceFile>libs/moment.min.js</jsSourceFile>
-							    <jsSourceFile>libs/sorttable.js</jsSourceFile>
-							    <jsSourceFile>models/timeseries.js</jsSourceFile>
-							    <jsSourceFile>models/referenceValue.js</jsSourceFile>
+							    <jsSourceFile>libs/sorttable.js</jsSourceFile>                                                           
+                                                            <jsSourceFile>libs/jquery.nouislider.min.js</jsSourceFile>
+                                                            <jsSourceFile>models/timeseries.js</jsSourceFile>                                                  
+                                                            <jsSourceFile>models/referenceValue.js</jsSourceFile>
 							    <jsSourceFile>models/tsStyle.js</jsSourceFile>
 							    <jsSourceFile>models/settings.js</jsSourceFile>
 							    <jsSourceFile>templates/template.js</jsSourceFile>
@@ -151,6 +154,7 @@
 							    <jsSourceFile>helper/status.js</jsSourceFile>
 							    <jsSourceFile>helper/button.js</jsSourceFile>
 							    <jsSourceFile>helper/permalink.js</jsSourceFile>
+                                                            <jsSourceFile>helper/content.js</jsSourceFile>
 							    <jsSourceFile>helper/bootstrap-fix.js</jsSourceFile>
 							    <jsSourceFile>helper/tsHelper.js</jsSourceFile>
 							    <jsSourceFile>controller/startController.js</jsSourceFile>
@@ -166,6 +170,11 @@
 							    <jsSourceFile>controller/tableController.js</jsSourceFile>
 							    <jsSourceFile>controller/exportController.js</jsSourceFile>
 							    <jsSourceFile>controller/guidedTourController.js</jsSourceFile>
+                                                            <jsSourceFile>controller/wizardController.js</jsSourceFile>
+                                                            <jsSourceFile>controller/wizardTimeController.js</jsSourceFile>
+                                                            <jsSourceFile>controller/wizardPlaceController.js</jsSourceFile>
+                                                            <jsSourceFile>controller/wizardOutlineController.js</jsSourceFile>
+                                                            <jsSourceFile>controller/wizardPhenomenController.js</jsSourceFile>
 							</jsSourceFiles>
 							<jsFinalFile>jsc.${project.version}.js</jsFinalFile>
                             <jsEngine>CLOSURE</jsEngine>

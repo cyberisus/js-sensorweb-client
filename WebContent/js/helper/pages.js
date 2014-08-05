@@ -79,6 +79,20 @@ var Pages = {
 			$('[data-toggle="phenomena"]').text(name);
 		}
 	},
+        
+        toggleWizard : function(active) {
+		if(active) {
+			$('.wizard-outline').toggleClass('active');
+			if($('.wizard-outline').hasClass('active')) {
+				$('[data-toggle="wizard-outline"]').text("X");
+			} else {
+				$('[data-toggle="wizard-outline"]').text("Overview");
+			}
+		} else {
+			$('.wizard-outline').removeClass('active');
+			$('[data-toggle="wizard-outline"]').text(Overview);
+		}
+	},
 
 	init : function() {
 		$(document).ready(function() {
@@ -88,6 +102,10 @@ var Pages = {
 			$('[data-toggle=phenomena]').click(function() {
                                 var label = $('.phenomena-entry').find('.selected').text();
 				Pages.togglePhenomenon(true,label);
+			});
+                        $('[data-toggle=wizard-outline]').click(function() {
+                                var label = $('.wizard-outline-entry').find('.selected').text();
+				Pages.toggleWizard(true);
 			});
 			$('[data-target="#map"]').click(function() {
 				Pages.navigateToMap();

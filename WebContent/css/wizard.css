@@ -32,6 +32,14 @@
     Author     : Boenki
 */
 
+
+#wizard{
+    width: 90%;
+    background-color: rgba(253,253,253,1.0);
+    margin: 30px auto 0px auto;
+    border-radius: 4px;
+    border: 1px solid #cdcdcd;
+}
 .wizardicon{
     width: 16px;
     height: 16px;
@@ -40,3 +48,221 @@
     background-position: center center;
 }
 
+/*
+    NAV
+*/
+#wizard #wizard-nav{
+    width: 100%;
+    display: block;
+    margin: 0px;
+    padding: 0px;
+    list-style: none;
+}
+#wizard #wizard-nav li{
+    float: left;
+    width: 25%;
+    padding: 15px 0 15px 80px;
+    background-color: #428BCA;
+    color: rgba(255, 255, 255, 0.5);
+    font: bold 1.2em arial;
+    border-right: none;
+}
+
+#wizard #wizard-nav .time{
+    background-image: url("../images/wizard/nav-1.png");
+    background-position: 20px center;
+    background-repeat: no-repeat;
+}
+#wizard #wizard-nav .phenomen{
+    background-image: url("../images/wizard/nav-2.png");
+    background-position: 20px; center;
+    background-repeat: no-repeat;
+}
+#wizard #wizard-nav .place{
+    background-image: url("../images/wizard/nav-3.png");
+    background-position: 20px center;
+    background-repeat: no-repeat;
+}
+#wizard #wizard-nav .result{
+    background-image: url("../images/wizard/nav-4.png");
+    background-position: 20px center;
+    background-repeat: no-repeat;
+}
+
+#wizard #wizard-nav li{
+    cursor: pointer;
+}
+#wizard #wizard-nav li:last-child{
+    border-right: none;
+}
+
+#wizard #wizard-nav .active{
+    background-color: #5496cf;
+}
+ 
+/*
+    CONTENT
+*/
+#wizard #wizard-content{
+    clear: left;
+    min-height: 500px;
+    width: 100%;
+    padding: 30px;
+}
+
+.wizard-warningbox{
+    display: block;
+    margin: 0px auto;
+    width: 100%;
+    padding: 5px;
+    text-align: center;
+    background-color: #FFD7D7;
+    border: 1px solid #FF9696;
+    border-radius: 4px;
+}
+/*
+    BUTTONS
+*/
+#wizard #wizard-content #wizard-buttons{
+    clear: both;
+}
+#wizard #wizard-content #wizard-buttons a{
+    padding: 10px 30px;
+    margin-top: 30px;
+    border-radius: 6px;
+    background-color: #428BCA;
+    color: rgba(255,255,255,0.7);
+}
+#wizard #wizard-content #wizard-buttons .btnBack{
+    float: left;
+    background-image: url("../images/icon16/back.png");
+    background-repeat: no-repeat;
+    background-position: left center;
+}
+#wizard #wizard-content #wizard-buttons .btnSkip{
+    float: right;
+    margin-right: 5px;
+}
+#wizard #wizard-content #wizard-buttons .btnNext{
+    float: right;
+    margin-right: 5px;
+    background-image: url("../images/icon16/next.png");
+    background-repeat: no-repeat;
+    background-position: right center;
+}
+
+/*
+    SLIDER
+*/
+
+ #wizard-conent-time .tooltip {
+	display: block;
+	position: absolute;
+	border: 1px solid #D9D9D9;
+	font: 400 12px/12px Arial;
+	border-radius: 3px;
+	background: #fff;
+        top: -60px;
+	padding: 5px;
+        padding-bottom: 10px;
+	left: -30px;
+	text-align: left;
+	width: 150px;
+}
+#wizard-conent-time .tooltip strong {
+	display: block;
+	padding: 2px;
+}
+#wizard-conent-time .tooltip #wizard-time-startPicker-value,
+#wizard-conent-time .tooltip #wizard-end-startPicker-value{
+    z-index: 5;
+    background-color: #ffffff;
+}
+#wizard-conent-time .tooltip .pfeil {
+        z-index: 1;
+	display: inline-block;
+        width: 15px;
+        height: 15px;
+        position: absolute;
+        top: 36px;
+        left: 40px;
+        background-color: #ffffff;
+        border-right: 1px solid #D9D9D9;  
+        border-bottom: 1px solid #D9D9D9;  
+        -moz-transform: rotate(45deg);
+        -ms-transform: rotate(45deg);
+        -o-transform: rotate(45deg);
+        -webkit-transform: rotate(45deg);
+}
+
+#wizard-conent-time .slider-labels.five-labels li {
+	width:calc(100% / 5);
+}
+#wizard-conent-time .slider-labels {
+	list-style: none;
+	padding:0;
+	margin-left: -3px;
+	width: 100%;
+	text-align: left;
+	font-size: 12px;
+}
+#wizard-conent-time .slider-labels li {
+	color: #d3d3d3;
+	display: inline;
+	float:left;
+	cursor: pointer;
+}
+#wizard-conent-time .slider-labels li:last-child {
+	position: absolute;
+	margin-left: -30px;
+	width:25px;
+}
+#wizard-conent-time .dateInputFields{
+    margin-top: 50px;
+    margin-bottom: 50px;
+}
+#wizard-conent-time .dateInputFields span{
+    width: 80px;
+    display: inline-block;
+    text-align: right;
+}
+#wizard-conent-time .dateInputFields input{
+    width: 190px;
+}
+
+
+
+
+#wizard .wizard-pager{
+    width: 100%;
+    margin: 0px auto;
+    padding: 10px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    webkit-box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+
+
+/*
+        PHENOMENA ##############################################################
+*/
+
+.phenomena-list label{
+    width: 270px;
+    margin: 10px 5px;
+}
+/*
+    HEADLINES
+*/
+.mt75{
+    margin-top: 75px;
+}
+
+
+@media screen and (max-width: 767px) {
+	.wizard-outline.active {
+		background: rgba(217, 217, 217, 0.9);
+	}
+}
