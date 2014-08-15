@@ -42,28 +42,37 @@ var WizardPhenomenController =  {
     },
     
     fillPhenomenaList : function(results) {
+        var selectedPhenomena = WizardOutlineController.selectedPhenomena;
+        console.log(selectedPhenomena);
         $.each(results, $.proxy(function(index, elem) {
             var test = Math.floor((Math.random() * 3));
-            var phe = '<label><input type="checkbox" hasstations="' + test + '" class="chkPhenomen" data-id="' +elem.id + '"> ' + elem.label +' (+' + test + ')</label>';
-            $('#wizard-conent-phenomen .phenomena-list').append(phe);            
+            var check = ($.inArray(elem.label, selectedPhenomena) !== -1) ? "checked" : "";
+            
+            var phe = '<label><input type="checkbox" ' + check + ' value="' + elem.label + '" hasstations="' + test + '" class="chkPhenomen" data-id="' +elem.id + '"> ' + elem.label +' (+' + test + ')</label>';
+            $('#wizard-conent-phenomen .phenomena-list').append(phe);
+           
         }));
         this.handleChanges();
     },
     
-    warningNoStations : function() {    
-        $('#wizard-conent-phenomen .phenomena-list').before(
-            '<p class="wizard-warningbox">There are no stations for your selection.<p>'
-        ); 
-    },
-    
     handleChanges : function(){
+        // Add all selected phenomena to array and send to OutlineController
+        $('#wizard-conent-phenomen .phenomena-list input').change( function() {
+            var phenomena = [];
+            $("#wizard-conent-phenomen .phenomena-list input:checked").each(function(){
+                phenomena.push($(this).val());
+            });
+            WizardOutlineController.addPhenomena( phenomena );
+        });
+        // Add warning if there are no stations
         $('#wizard-conent-phenomen .phenomena-list input').change( function() {
             if ($(this).is(':checked') && $(this).attr('hasstations') == 0 ){
-                WizardPhenomenController.warningNoStations();
+                WizardController.setWarnings('selectionWithNoStation');
             } else if( $(this).is(':checked') && $(this).attr('hasstations') != 0 ){
                 // add to OutlineBox
             };
         });
+        // Clear warning
         $('#wizard-conent-phenomen .phenomena-list input').focusout( function() {
             $('#wizard-conent-phenomen p.wizard-warningbox').remove();
         });
@@ -82,8 +91,14 @@ var WizardPhenomenController =  {
         });
         $('#wizard-buttons .btnSkip').on('click', function() {
             //
-        });
+        });     
+    },
+    
+    initOnChangePhenomena : function(){
+        
+        
     }
+    
     
     
 }

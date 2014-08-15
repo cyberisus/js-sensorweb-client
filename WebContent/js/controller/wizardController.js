@@ -42,6 +42,7 @@ var WizardController = {
         this.loadWizardTimePage();
         this.loadWizardOutlinePage();
         this.bindNavigation();
+        WizardOutlineController.init();
     },
 
     loadDefaultWizardLayout: function() {
@@ -75,6 +76,9 @@ var WizardController = {
             labels : "TestLabel"
 	});
 	$('#wizard-content').append(html);
+        console.log("place ready load");
+        WizardPlaceController.init();
+        console.log("jaaaaaa place load");
     },
         
     loadWizardResultPage : function () {
@@ -118,7 +122,34 @@ var WizardController = {
         console.log(elem);
         $('#wizard #wizard-nav').find('.active').removeClass('active');
         $(elem).addClass('active');
-    }
+    },
+    
+    
+    
+    /*
+     *  WARNINGS
+     */
+    setWarnings : function(mode) {    
+        switch(mode){
+            case 'wrongDiff':
+                    $('#wizard-conent-time').prepend(
+                        '<p class="wizard-warningbox">The start date can not be greater then the end date.<p>'
+                    );
+                    break;
+                    
+            case 'selectionWithNoStation':
+                    $('#wizard-conent-phenomen .phenomena-list').before(
+                        '<p class="wizard-warningbox">There are no stations for your selection.<p>'
+                    );
+                    break;
+        }
+        
+        $('.wizard-warningbox').fadeIn('slow');
+        setTimeout(function(){
+            $('.wizard-warningbox').fadeOut('slow');
+        }, 5000);
+        
+    },
     
 }
 

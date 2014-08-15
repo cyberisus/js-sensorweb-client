@@ -33,12 +33,16 @@
 
 var WizardOutlineController = {
     
-    selectedDateStart   : "",
-    selectedDateEnd     : "",
+    selectedDate        : [{'from' : ''},{'till' : ''}, {'mode' : ''}],
     selectedPhenomena   : [],
+    selectedPlaceType   : "",
+    selectedCity        : "",
+    selectedRadius      : [ {lat: ''},  {lng: ''} ,  {radius: ''}],
+    selectedBBox        : [],
     
     init : function() {
-        
+        this.editSelectedFeatures();
+        //alert(moment().startOf('day'));
     },
     
     refreshOutline : function() {
@@ -51,8 +55,57 @@ var WizardOutlineController = {
     
     handlePlaces : function() {},
     
-    handleResults : function() {}
+    handleResults : function() {},
     
+    addDates : function(timespan) {
+        this.selectedDate = timespan;
+        this.selectedDate.mode  = timespan.mode;
+        this.selectedDate.from  = moment(timespan.from).format();
+        this.selectedDate.till  = moment(timespan.till).endOf('day').format();
+        $('.datebox-start').text(this.selectedDate.from);
+        $('.datebox-end').text(this.selectedDate.till);
+    },
+    
+    addPhenomena : function(phenomena) {
+        this.selectedPhenomena = phenomena;
+        $('.phenomenbox-phenomena').empty();
+        if( phenomena.length > 0) {
+            $.each( phenomena, function( i, val ){
+                $('.phenomenbox-phenomena').append( "<li>" + val + "</li>");
+            });
+        } else {
+            $('.phenomenbox-phenomena').append( "<p>No selected phenomen.</p>");
+        }
+    },
+    
+    addPlaceRadius : function(place){
+        this.selectedPlayeType = "radius";
+        this.selectedRadius.lat = place.lat;
+        this.selectedRadius.lng = place.lng;
+        this.selectedRadius.radius = place.radius;
+        $('.placebox-places').empty();
+        $('.placebox-places').append('\
+            <div>Lat: <span class="placebox-radius-lat">'+  Math.round(this.selectedRadius.lat * 100000) / 100000  +'</span></div>\n\
+            <div>Lng: <span class="placebox-radius-lng">'+ Math.round(this.selectedRadius.lng * 100000) / 100000  +'</span></div>\n\
+            <div>Radius: <span class="placebox-radius-radius">'+  Math.round(this.selectedRadius.radius * 100) / 100 +'</span></div>\n\
+        ');
+    },
+    
+    addPlaceBBox : function(){
+
+    },
+    
+    addPlaceCity : function(){
+
+    },
+    
+    
+    editSelectedFeatures : function(){
+        $('.edit-datebox').on('click', function(){ $('.wizard-pager').remove(); WizardController.loadWizardTimePage(); });
+        $('.edit-phenomenbox').on('click', function(){ $('.wizard-pager').remove(); WizardController.loadWizardPhenomenPage(); });
+        $('.edit-placebox').on('click', function(){ $('.wizard-pager').remove(); WizardController.loadWizardPlacePage(); });
+    }
+   
 }
 
 

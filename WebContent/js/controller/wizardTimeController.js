@@ -37,43 +37,41 @@ var WizardTimeController = {
     
     init: function(){
         $(document).ready(function() {
-            
-                WizardTimeController.loadTimeRangeSlider();
-                WizardTimeController.loadPresets();
-                WizardTimeController.initButtons();
-
-            
+             // Init some functions
+             WizardTimeController.loadTimeRangeSlider();
+             WizardTimeController.loadPresets();
+             WizardTimeController.initButtons();  
         });
     },
     
     loadTimeRangeSlider: function () {
-        
-          
-            
+
             var startValue = $.Link({
-                    target: '-tooltip-<div class="tooltip"></div>',
+                    target: '-tooltip-<div class="tooltip startSliderValue"></div>',
                     //target: $("#wizard-time-startPicker")
                     method: function ( value ) {
                             $("#wizard-time-startPicker").val(value);
                             var theDate = new Date(+value);
                             $(this).html(
                                     '<strong>Value: </strong>' +
-                                    '<span class="pfeil"></span><span  id="wizard-time-startSlider-value">' + formatDate(theDate) + '</span>'        
+                                    '<span class="pfeil"></span><span  id="wizard-time-startSlider-value">' + moment(theDate).format("DD.MM.YYYY") + '</span>'        
                             );
-                            $('#wizard-time-startPicker').val( formatDate(theDate) );       
+                            $('#wizard-time-startPicker').val( moment(theDate).format("YYYY-MM-DD") );  
+                            $("#wizard-time-startPicker").trigger( "change" );
                     } 
             });
             
             var endValue = $.Link({
-                    target: '-tooltip-<div class="tooltip"></div>',
+                    target: '-tooltip-<div class="tooltip endSliderValue"></div>',
                     method: function ( value ) {
-                            $("#wizard-time-endPicker").val(value);
+                            $("#wizard-time-endPicker").val(value);                          
                             var theDate = new Date(+value);
                             $(this).html(
                                     '<strong>Value: </strong>' +
-                                    '<span class="pfeil"></span><span  id="wizard-time-endSlider-value">' + formatDate(theDate, true) + '</span>'    
+                                    '<span class="pfeil"></span><span  id="wizard-time-endSlider-value">' + moment(theDate).format("DD.MM.YYYY") + '</span>'    
                             );
-                            $('#wizard-time-endPicker').val( formatDate(theDate, true) );                        
+                            $('#wizard-time-endPicker').val( moment(theDate).format("YYYY-MM-DD") ); 
+                            $("#wizard-time-endPicker").trigger( "change" );
                     } 
             });
             
@@ -98,26 +96,21 @@ var WizardTimeController = {
             $('#wizard-time-startPicker').datepicker({
                 position:'above',
                 autoclose: true,
-                format: 'dd.mm.yyyy'
+                format: 'yyyy-mm-dd'
             
             }).on('changeDate', function (date){
-               
-                TimeController.evaluateDate;
-                $(this).val( $(this).val() + ' 00:00+02:00');  
-                $('#wizard-time-startSlider-value').text( formatDate(date.date) );
-               
+                $('#wizard-time-startSlider-value').text( moment(date.date).format("DD.MM.YYYY") ); 
+                $("#wizard-time-startPicker").trigger( "change" );
             });
             
             $('#wizard-time-endPicker').datepicker({
                 position:'above',
                 autoclose: true,  
-                format: 'dd.mm.yyyy'
+                format: 'yyyy-mm-dd'
             
-            }).on('changeDate', function (date){
-               
-                TimeController.evaluateDate;        
-                $(this).val( $(this).val() + ' 23:59+02:00'); 
-                $('#wizard-time-endSlider-value').text( formatDate(date.date) );
+            }).on('changeDate', function (date){               
+                $('#wizard-time-endSlider-value').text( moment(date.date).format("DD.MM.YYYY") );
+                $("#wizard-time-endPicker").trigger( "change" );
            });
                
        
@@ -130,9 +123,10 @@ var WizardTimeController = {
             var data = TimeController.timeRangeData;             
             $.each( TimeController.timeRangeData, function( key, timespan ) {
                 $.each( timespan, function( key, timespan2 ) {
-                    $('#wizard-conent-time #presets').append('<a class="btn btn-default multiline-button preset-btn">' + timespan2.label + '</a>');
+                    $('#wizard-conent-time #presets').append('<a value="' + timespan2.value + '" class="btn btn-default multiline-button preset-btn">' + timespan2.label + '</a>');
                 });
             });
+            WizardTimeController.initOnChangeMethods();
         });
     },
     
@@ -145,29 +139,54 @@ var WizardTimeController = {
         $('#wizard-buttons .btnSkip').on('click', function() {
             //
         });
-    }
+
+    },
+    
+    initOnChangeMethods : function(){   
+        // Handle Clicks on presets
+        $('#wizard-conent-time #presets a').on('click', function() {
+            $('#wizard-conent-time #presets').find('.selected').removeClass('selected');
+            $(this).toggleClass('selected');
+            
+            // Add time range to outline box 
+            var selectedPreset = Time.isoTimespan( $(this).attr('value') );
+            WizardOutlineController.addDates(selectedPreset);
+
+        });
+        // Handle changes on datepicker
+        $('#wizard-time-startPicker').change(function(e) {      
+            $('#wizard-conent-time #presets').find('.selected').removeClass('selected');
+            // Add time range to outline box
+            var timespan = {'from' : $('#wizard-time-startPicker').val() ,'till' : $('#wizard-time-endPicker').val() , 'mode' : ''};
+            WizardOutlineController.addDates(timespan);  
+            timespan = [];
+            WizardTimeController.evaluateDate(e);
+        });
+        $('#wizard-time-endPicker').change(function(e) {
+            $('#wizard-conent-time #presets').find('.selected').removeClass('selected');
+            // Add time range to outline box
+            var timespan = {'from' : $('#wizard-time-startPicker').val() ,'till' : $('#wizard-time-endPicker').val() , 'mode' : ''};
+            WizardOutlineController.addDates(timespan);  
+            timespan = []; 
+            WizardTimeController.evaluateDate(e);
+        });
+  
+    },
+    
+    evaluateDate : function (ev) {
+        var startdate   = moment($('#wizard-time-startPicker').val());
+        var enddate     = moment($('#wizard-time-endPicker').val());
+        var diff        = startdate.diff(enddate);
+        
+        if (diff > 0) {
+            WizardController.setWarnings('wrongDiff');
+        }
+    },
+    
+   
 }
 
 // Create a new date from a string, return as a timestamp.
 function timestamp(str){
     return new Date(str).getTime();   
 }
-
-// Create a string representation of the date.
-function formatDate ( date, start ) {
-    var hours = (start == true) ? "23" : "00";
-    var minutes = (start == true) ? "59" : "00";
-    var day = (date.getDate() < 10) ? "0" + date.getDate() : date.getDate();
-    var month = date.getMonth() + 1;
-    month = (month < 10) ? "0" + month : month;
-    
-    return  day + '.' + month + '.' + date.getFullYear() + ' ' +
-            hours + ':' + minutes + '+02:00';
-    /*
-    return weekdays[date.getDay()] + ", " +
-        date.getDate() + nth(date.getDate()) + " " +
-        months[date.getMonth()] + " " +
-        date.getFullYear();
-        */
-}
-

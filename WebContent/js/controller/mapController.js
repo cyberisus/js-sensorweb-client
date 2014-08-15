@@ -38,12 +38,14 @@ var Map = {
             });
         });
         this.loadStations();
+        
         EventManager.subscribe("resetStatus", $.proxy(this.loadStations, this));
         EventManager.subscribe("clusterStations", $.proxy(this.loadStations, this));
         EventManager.subscribe("timeseries:showInMap", $.proxy(this.showTsInMap, this));
     },
     createMap: function() {
         if ($("#map").length > 0) {
+            
             this.map = L.map('map');
             L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
