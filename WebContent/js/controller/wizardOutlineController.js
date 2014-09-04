@@ -35,14 +35,19 @@ var WizardOutlineController = {
     
     selectedDate        : [{'from' : ''},{'till' : ''}, {'mode' : ''}],
     selectedPhenomena   : [],
+    selectedStations    : [],
     selectedPlaceType   : "",
     selectedCity        : "",
-    selectedRadius      : [ {lat: ''},  {lng: ''} ,  {radius: ''}],
+    selectedRadius      : [{lat: ''},  {lng: ''} ,  {radius: ''}],
     selectedBBox        : [],
+    currentResults      : 0,
     
     init : function() {
         this.editSelectedFeatures();
         //alert(moment().startOf('day'));
+        
+        
+        
     },
     
     refreshOutline : function() {
@@ -55,7 +60,20 @@ var WizardOutlineController = {
     
     handlePlaces : function() {},
     
-    handleResults : function() {},
+    updateResultNumber : function(opt, number) {
+        //var num = $('.outline-resultnumber').text();
+        var num = this.currentResults; 
+        var newResultCounts;
+        if(opt == "add"){
+            newResultCounts = parseInt(num) + number;
+        } else if(opt =="sub"){
+            newResultCounts = parseInt(num) - number;
+        } else {
+            newResultCounts = number;
+        }
+        //this.currentResults = newResultCounts;
+        $('.outline-resultnumber').text(newResultCounts);
+    },
     
     addDates : function(timespan) {
         this.selectedDate = timespan;
@@ -79,7 +97,7 @@ var WizardOutlineController = {
     },
     
     addPlaceRadius : function(place){
-        this.selectedPlayeType = "radius";
+        this.selectedPlaceType = "radius";
         this.selectedRadius.lat = place.lat;
         this.selectedRadius.lng = place.lng;
         this.selectedRadius.radius = place.radius;

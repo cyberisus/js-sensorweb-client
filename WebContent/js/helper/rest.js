@@ -160,5 +160,47 @@ var Rest = {
     },
     _createIdString: function(id) {
         return (id === null ? "" : id);
-    }
+    },
+    
+    
+    tsImage: function(id, timespan, apiUrl, data) {
+        if ($.isEmptyObject(data)) {
+            data = {
+                "legend": true,
+                "timespan": timespan,
+                "width": 400,
+                "height": 300,
+                "language": "de",
+                "grid": true,
+                "styleOptions": {
+                    id: {
+                        "chartType": "line",
+                        "properties": {
+                            "color": "#0000FF",
+                            "lineType": "solid",
+                            "width": 1
+                        }
+                    }
+                }
+            }
+        }
+        //data.expanded = true;
+        //data.rendering_hints = true;
+        /*return $.post(apiUrl + "timeseries/getData", data, function(promise, result) {
+            console.log(result);
+            promise.resolve(result);
+        });*/
+        
+        return $.ajax({
+            type: "POST",
+            url: apiUrl + "timeseries/getData",
+            data: data,
+            success: function(data){
+                console.log("Aus success:");
+                console.log($data);
+            },
+            dataType: "image/png"
+          });
+    },
+    
 };

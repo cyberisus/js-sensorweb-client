@@ -33,26 +33,43 @@
 
 var WizardPhenomenController =  {
     
+    resultcount : parseInt(0),
+    allStations : [],
+    results     : [{'onstart': 0, 'onend': 0, 'diff':0}],
+    
     init : function() {
+        console.log("result " + this.resultcount);
+        WizardController.isLoading(true);
         var provider = Status.get('provider');
         Rest.phenomena(null, provider.apiUrl, {
             service: provider.serviceID
         }).done($.proxy(this.fillPhenomenaList, this));
         this.initButtons();
+        
+        // set start counter
+        this.results.onstart = WizardOutlineController.currentResults;
+        //
+        WizardOutlineController.selectedStations = [];
+        //console.log("onStart: " + this.results.onstart + " / onEnd: " + this.results.onend + " Diff: " + this.results.diff);
     },
     
     fillPhenomenaList : function(results) {
         var selectedPhenomena = WizardOutlineController.selectedPhenomena;
-        console.log(selectedPhenomena);
+        $('.outline-resultnumber').text( this.results.onend );
+        // Create list
         $.each(results, $.proxy(function(index, elem) {
-            var test = Math.floor((Math.random() * 3));
+            //var test = Math.floor((Math.random() * 3));
+            var test = 0;
             var check = ($.inArray(elem.label, selectedPhenomena) !== -1) ? "checked" : "";
             
-            var phe = '<label><input type="checkbox" ' + check + ' value="' + elem.label + '" hasstations="' + test + '" class="chkPhenomen" data-id="' +elem.id + '"> ' + elem.label +' (+' + test + ')</label>';
+            var phe = '<div><input type="checkbox" ' + check + ' value="' + elem.label + '" hasstations="' + test + '" class="chkPhenomen" data-id="' +elem.id + '"> <label for="' +elem.id + '">' + elem.label +' (+' + test + ')</label></div>';
             $('#wizard-conent-phenomen .phenomena-list').append(phe);
            
         }));
+        
         this.handleChanges();
+        this.loadStations();
+        
     },
     
     handleChanges : function(){
@@ -68,9 +85,15 @@ var WizardPhenomenController =  {
         $('#wizard-conent-phenomen .phenomena-list input').change( function() {
             if ($(this).is(':checked') && $(this).attr('hasstations') == 0 ){
                 WizardController.setWarnings('selectionWithNoStation');
-            } else if( $(this).is(':checked') && $(this).attr('hasstations') != 0 ){
-                // add to OutlineBox
             };
+        });
+        // Update results in outline box
+        $('#wizard-conent-phenomen .phenomena-list input').change( function() {
+            if ( $(this).is(':checked') ){
+                WizardPhenomenController.updateCounter('add', $(this).attr('hasstations') );
+            } else {
+                WizardPhenomenController.updateCounter('sub', $(this).attr('hasstations') );
+            }
         });
         // Clear warning
         $('#wizard-conent-phenomen .phenomena-list input').focusout( function() {
@@ -80,12 +103,20 @@ var WizardPhenomenController =  {
     
     initButtons : function(){
         $('#wizard-buttons .btnNext').on('click', function() {
+            // Update result counter
+            WizardOutlineController.currentResults = $('.outline-resultnumber').text();
+            WizardPhenomenController.results.onend = WizardOutlineController.currentResults;
+            var diff = WizardPhenomenController.results.onstart - WizardPhenomenController.results.onend;
+            WizardPhenomenController.results.diff = diff;
+            // Load new page
             $('.wizard-pager').remove();
+            $('#wizard-content').empty();
             WizardController.loadWizardPlacePage();
             WizardController.setActiveNav( $('#wizard-nav li.place') );
         });
         $('#wizard-buttons .btnBack').on('click', function() {
             $('.wizard-pager').remove();
+            $('#wizard-content').empty();
             WizardController.loadWizardTimePage();
             WizardController.setActiveNav( $('#wizard-nav li.time') );
         });
@@ -97,10 +128,102 @@ var WizardPhenomenController =  {
     initOnChangePhenomena : function(){
         
         
+    },
+    
+    updateCounter : function(opt, nr){   
+        var number = parseInt( $('.outline-resultnumber').text());
+        var num = parseInt(nr);
+        switch (opt) {
+            case 'add':
+                $('.outline-resultnumber').text(number + num);
+                break;
+            case 'sub':
+                $('.outline-resultnumber').text(number - num);
+                break;
+        } 
+    },
+    
+    loadStations : function(){
+        console.log("load Stsation");
+        var provider = Status.get('provider');
+        // get all stations
+        Rest.stations(null, provider.apiUrl, {
+            service: provider.serviceID
+        }).done($.proxy(this.saveStations, this));  
+
+    },
+    
+    saveStations : function (result){
+        // get through stations and take station.id
+        console.log(result);
+        var stations = [];
+        
+        
+        //
+        WizardPhenomenController.allStations = result.slice();
+        WizardOutlineController.selectedStations = result.slice();
+        
+        $.each(result, function(id, elem) {
+            // Load timeseries with phenomen labels
+            stations.push(elem.properties.id);
+            
+            //WizardPhenomenController.allStations.push(elem);
+            //WizardOutlineController.selectedStations.push(elem);
+        });
+
+        this.loadPhenomena(stations);
+        
+    },
+    
+    loadPhenomena : function(stations){
+        var apiUrl = Status.get('provider').apiUrl;
+        var phenomena = [];
+         console.log("loadPhenomena");
+        $.each(stations, function(id, elem) {
+            // Load timeseries with phenomen labels
+            phenomena.push(elem);                  
+            Rest.stations(elem, apiUrl).done($.proxy(function(results){
+                WizardPhenomenController.loadTsFromStation(results);
+            }));
+            
+        });
+        console.log("After laodPhenomena");
+        
+    },
+    
+    loadTsFromStation : function(results){
+        // get all phenomena
+            
+            
+            $.each(results.properties.timeseries, function(id, elem) {
+                var phenomID = elem.phenomenon.id;
+                var phenomLable = elem.phenomenon.label;
+                // Search für checkbox with this label and count++
+                var currentNumber = $('#wizard-conent-phenomen .phenomena-list')
+                        .find('input[value="' + phenomLable + '"]')
+                        .attr('hasstations');
+                var number = parseInt(currentNumber) + 1;
+                // Update number
+                $('#wizard-conent-phenomen .phenomena-list')
+                        .find('input[value="' + phenomLable + '"]')
+                        .attr('hasstations', number);
+
+                $('#wizard-conent-phenomen .phenomena-list')
+                        .find('label[for="' + phenomID + '"]')
+                        .text(phenomLable + ' (+' + number + ')');
+
+                this.resultcount = this.resultcount + 1;
+            });
+            
+            console.log("max count: " + this.resultcount);
+            // Update max Results for selection
+            //WizardOutlineController.updateResultNumber(this.resultcount);
+            //
+            // Does not work - why?
+            WizardController.isLoading(false);
+        
     }
-    
-    
-    
+
 }
 
 

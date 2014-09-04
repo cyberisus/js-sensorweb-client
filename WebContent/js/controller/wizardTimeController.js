@@ -41,6 +41,7 @@ var WizardTimeController = {
              WizardTimeController.loadTimeRangeSlider();
              WizardTimeController.loadPresets();
              WizardTimeController.initButtons();  
+             WizardTimeController.checkOutlineBox();  
         });
     },
     
@@ -75,6 +76,9 @@ var WizardTimeController = {
                     } 
             });
             
+            var from = (WizardOutlineController.selectedDate.from !== undefined ) ? WizardOutlineController.selectedDate.from : "2011";
+            var till = (WizardOutlineController.selectedDate.till !== undefined) ? WizardOutlineController.selectedDate.till : "2014";
+            
             $("#wizard-dateslider").noUiSlider({
                 start: 40,
                     range: {              
@@ -83,7 +87,7 @@ var WizardTimeController = {
                     },
                     connect: true,
                     step: 24 * 60 * 60 * 1000, // * 7
-                    start: [ timestamp('2011'), timestamp('2013') ],
+                    start: [ timestamp(from), timestamp(till) ],
                     serialization: {
                             lower: [ startValue ],
                             upper: [ endValue ],
@@ -99,8 +103,11 @@ var WizardTimeController = {
                 format: 'yyyy-mm-dd'
             
             }).on('changeDate', function (date){
-                $('#wizard-time-startSlider-value').text( moment(date.date).format("DD.MM.YYYY") ); 
-                $("#wizard-time-startPicker").trigger( "change" );
+                $("#wizard-dateslider").noUiSlider({
+                    start: [ timestamp(moment(date.date).format("YYYY-MM-DD")), timestamp($('#wizard-time-endPicker').val()) ]
+                 }, true);
+                //$('#wizard-time-startSlider-value').text( moment(date.date).format("DD.MM.YYYY") ); 
+                //$("#wizard-time-startPicker").trigger( "change" );
             });
             
             $('#wizard-time-endPicker').datepicker({
@@ -108,12 +115,17 @@ var WizardTimeController = {
                 autoclose: true,  
                 format: 'yyyy-mm-dd'
             
-            }).on('changeDate', function (date){               
-                $('#wizard-time-endSlider-value').text( moment(date.date).format("DD.MM.YYYY") );
-                $("#wizard-time-endPicker").trigger( "change" );
+            }).on('changeDate', function (date){  
+                $("#wizard-dateslider").noUiSlider({
+                    start: [ timestamp($('#wizard-time-startPicker').val()), timestamp(moment(date.date).format("YYYY-MM-DD")) ]
+                 }, true);
+                //$('#wizard-time-endSlider-value').text( moment(date.date).format("DD.MM.YYYY") );
+                //$("#wizard-time-endPicker").trigger( "change" );
            });
                
        
+            
+            
 
     },
     
@@ -133,6 +145,7 @@ var WizardTimeController = {
     initButtons : function(){
         $('#wizard-buttons .btnNext').on('click', function() {
             $('.wizard-pager').remove();
+            $('#wizard-content').empty();
             WizardController.loadWizardPhenomenPage();
             WizardController.setActiveNav( $('#wizard-nav li.phenomen') );
         });
@@ -146,11 +159,23 @@ var WizardTimeController = {
         // Handle Clicks on presets
         $('#wizard-conent-time #presets a').on('click', function() {
             $('#wizard-conent-time #presets').find('.selected').removeClass('selected');
-            $(this).toggleClass('selected');
-            
+            $(this).toggleClass('selected');   
             // Add time range to outline box 
             var selectedPreset = Time.isoTimespan( $(this).attr('value') );
             WizardOutlineController.addDates(selectedPreset);
+            // Update slider and datepicker
+            
+            //$('#wizard-time-startSlider-value').text(moment(selectedPreset.from).format("YYYY-MM-DD"));
+            //$('#wizard-time-endSlider-value').text(moment(selectedPreset.till).format("YYYY-MM-DD"));
+            // Update datepicker
+            $('#wizard-time-startPicker').val(moment(selectedPreset.from).format("YYYY-MM-DD"));
+            $('#wizard-time-endPicker').val(moment(selectedPreset.till).format("YYYY-MM-DD"));
+            $("#wizard-time-startPicker").trigger( "change" );
+            $("#wizard-time-endPicker").trigger( "change" );
+            //Update slider
+            $("#wizard-dateslider").noUiSlider({
+                    start: [ timestamp(moment(selectedPreset.from).format("YYYY-MM-DD")), timestamp(moment(selectedPreset.till).format("YYYY-MM-DD")) ]
+            }, true);
 
         });
         // Handle changes on datepicker
@@ -182,6 +207,21 @@ var WizardTimeController = {
             WizardController.setWarnings('wrongDiff');
         }
     },
+    
+    checkOutlineBox : function(){
+        var from = WizardOutlineController.selectedDate.from;
+        var till = WizardOutlineController.selectedDate.till;
+        var mode = WizardOutlineController.selectedDate.mode;
+        
+        if(mode !== "" && mode !== undefined){
+            console.log("MODE gewaehlt: " + mode);
+        } else if(from !== "" && till !== ""){
+            $('#wizard-time-startPicker').val(moment(from).format("YYYY-MM-DD"));
+            $('#wizard-time-endPicker').val(moment(till).format("YYYY-MM-DD"));
+            $('#wizard-time-startSlider-value').text(moment(from).format("YYYY-MM-DD"));
+            $('#wizard-time-endSlider-value').text(moment(till).format("YYYY-MM-DD"));
+        }
+    }
     
    
 }

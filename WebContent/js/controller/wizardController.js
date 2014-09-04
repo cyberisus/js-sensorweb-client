@@ -76,9 +76,7 @@ var WizardController = {
             labels : "TestLabel"
 	});
 	$('#wizard-content').append(html);
-        console.log("place ready load");
         WizardPlaceController.init();
-        console.log("jaaaaaa place load");
     },
         
     loadWizardResultPage : function () {
@@ -87,6 +85,7 @@ var WizardController = {
             labels : "TestLabel"
 	});
 	$('#wizard-content').append(html);
+        WizardResultController.init();
     },
     
     loadWizardOutlinePage : function () {
@@ -101,6 +100,7 @@ var WizardController = {
         $('#wizard-nav li').on('click', function (){
             var page = $(this).attr('name');
             $('.wizard-pager').remove();
+            $('#wizard-content').empty();
             
             if(page == "wizard-time"){             
                 WizardController.loadWizardTimePage()
@@ -119,9 +119,18 @@ var WizardController = {
     },
     
     setActiveNav : function(elem) {
-        console.log(elem);
         $('#wizard #wizard-nav').find('.active').removeClass('active');
         $(elem).addClass('active');
+    },
+    
+    isLoading : function(bool){
+        if(bool){
+           $('#wizard-loading').animate({'height': '80px', 'display': 'inline-block'});
+        } else {
+           $('#wizard-loading').animate({'height': '10px', 'display': 'none'});
+        }
+      
+        
     },
     
     

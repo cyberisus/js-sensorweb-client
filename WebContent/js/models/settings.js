@@ -46,7 +46,8 @@ var Settings = {
 //		'http://localhost:8090/sensorwebclient-webapp-3.3.0-SNAPSHOT/api/v1/' : 'localhost'
 		'http://sensorweb.demo.52north.org/sensorwebclient-webapp-stable/api/v1/' : '52nSensorweb', 
 		'http://sosrest.irceline.be/api/v1/' : 'irceline',
-		'http://www.fluggs.de/sos2/api/v1/' : 'fluggs'
+		'http://www.fluggs.de/sos2/api/v1/' : 'fluggs',
+                'http://localhost:8080/rest/service/' : 'localhost'
 	},
 	
 	// default selected provider
@@ -54,6 +55,10 @@ var Settings = {
 		serviceID : 'srv_738111ed219f738cfc85be0c8d87843c',
 		apiUrl : 'http://sensorweb.demo.52north.org/sensorwebclient-webapp-stable/api/v1/'
 	},
+        boenkiProvider : {
+                serviceID : '',
+		apiUrl : 'http://localhost:8080/rest/service/'
+        },
 	
 	// zoom level in the map, used for user location and station position
 	zoom : 13,
