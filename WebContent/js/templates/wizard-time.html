@@ -1,7 +1,7 @@
 <div class="wizard-pager" id="wizard-conent-time">
 
-    <h3>latest</h3>
-    <div>no old selections</div>
+    <h3>Your last selection:</h3>
+    <div id="lasttimeselection"></div>
     
     <h3>preset</h3>
     <div id="presets"></div>
@@ -9,17 +9,23 @@
     <h3 class="mt75">custom</h3>
     <div id="wizard-dateslider"></div>
     <ul class="slider-labels five-labels">
-        <li>2010</li>
-        <li>2011</li>
-        <li>2012</li>
-        <li>2013</li>
-        <li>2014</li>
-        <li>2015</li>
+        <!--
+        <li><span>|</span><div>2010</div></li>
+        <li><span>|</span><div>2011</div></li>
+        <li><span>|</span><div>2012</div></li>
+        <li><span>|</span><div>2013</div></li>
+        <li><span>|</span><div>2014</div></li>
+        <li><span>|</span><div>2015</div></li>
+        -->
     </ul>
+    <div class="dateslider-addYearsContainer">
+        <a class="addFiveYearBefore" type="button" data-action="fiveYearBefore" title="Add five years before"> </a>
+        <a class="addOneYearBefore" type="button" data-action="oneYearBefore" title="Add one year before"> </a>
+    </div>
      
      <div class="dateInputFields"> 
-         <div><span>Start date: </span> <input type="text" class="btn btn-default startDate" id="wizard-time-startPicker" value="start"></div>
-         <div><span>End date: </span> <input type="text" class="btn btn-default endDate" id="wizard-time-endPicker" value="end"></div>
+         <div><span>Start date: </span> <input type="text" value="01-01-2011" class="btn btn-default startDate" id="wizard-time-startPicker"></div>
+         <div><span>End date: </span> <input value="01-01-2013" type="text" class="btn btn-default endDate" id="wizard-time-endPicker" ></div>
      </div>
     
 </div>
