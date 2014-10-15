@@ -64,13 +64,12 @@
 #wizard #wizard-nav li{
     float: left;
     width: 25%;
-    padding: 15px 0 15px 80px;
-    background-color: #428BCA;
+    padding: 15px 0 15px 40px;
     color: rgba(255, 255, 255, 0.5);
     font: bold 1.2em arial;
     border-right: none;
 }
-
+/*
 #wizard #wizard-nav .time{
     background-image: url("../images/wizard/nav-1.png");
     background-position: 20px center;
@@ -91,16 +90,34 @@
     background-position: 20px center;
     background-repeat: no-repeat;
 }
+*/
 
 #wizard #wizard-nav li{
     cursor: pointer;
+    background-color: #61A0D6;
+    background-image: url("../images/wizard/nav-edge3.png");
+    background-position: center right;
+    background-repeat: no-repeat;
 }
 #wizard #wizard-nav li:last-child{
+    cursor: pointer;
+    background-image: none;
     border-right: none;
+
 }
 
+
 #wizard #wizard-nav .active{
-    background-color: #5496cf;
+    background-color: #428BCA;
+    background-image: url("../images/wizard/nav-edge2.png");
+    background-position: center right;
+    background-repeat: no-repeat;
+}
+#wizard #wizard-nav .active-last{
+    background-color: #428BCA;
+    background-image: url("../images/wizard/nav-edge.png");
+    background-position: center right;
+    background-repeat: no-repeat;
 }
  
 /*
@@ -123,6 +140,7 @@
     border: 1px solid #FF9696;
     border-radius: 4px;
 }
+
 /*
     HEADINGS
 */
@@ -146,22 +164,35 @@
 /*
     LOADING
 */
+
 #wizard-loading {
+    display: none;
     position: absolute;
-    top: 80px;
-    left: 35%;
-    height: 50px;
-    width: 30%;
-    background-color: rgba(49, 49, 49, 0.7);
-    border-bottom-left-radius: 8px;
-    border-bottom-right-radius: 8px;
+    top: 250px;
+    z-index: 11;
+    left: 45%;
+    height: 110px;
+    width: 130px;
+    line-height: 150px;
+    background-color: rgba(49, 49, 49, 0.8);
+    background-image: url("../images/wizard/loader3.gif");
+    background-position: center center;
+    background-repeat: no-repeat;
+    border-radius: 8px;
+    padding:30px;
     text-align: center;
     color: #ffffff;
     font: bold 14px arial;
 }
-#wizard-loading p{
-    line-height: 50px;
+#wizard-loading.error{
+    left: 40%;
+    height: 130px;
+    width: 250px;
 }
+#wizard-loading p{
+    margin-top: 35px;
+}
+
 
 
 /*
@@ -188,12 +219,15 @@
     float: left;
     background-image: url("../images/icon16/back.png");
     background-repeat: no-repeat;
-    background-position: left center;
+    background-position: 8px center;
     margin-left: 5px;
 }
 #wizard #wizard-content #wizard-buttons .btnSkip{
     float: right;
     margin-right: 5px;
+    background-image: url("../images/wizard/skip.png");
+    background-repeat: no-repeat;
+    background-position: right center;
 }
 #wizard #wizard-content #wizard-buttons .btnNext{
     float: right;
@@ -248,7 +282,7 @@
 }
 
 #wizard-conent-time .slider-labels.five-labels li {
-	width:calc(100% / 5);
+	width: calc(100% / 5);
 }
 #wizard-conent-time .slider-labels {
 	list-style: none;
@@ -266,14 +300,68 @@
 }
 #wizard-conent-time .slider-labels li:last-child {
 	position: absolute;
-	margin-left: -30px;
-	width:25px;
+	width:2px;
 }
+#wizard-conent-time .slider-labels li:last-child div {
+	display: none;
+}
+#wizard-conent-time .slider-labels li:first-child span,
+#wizard-conent-time .slider-labels li:last-child span
+{
+	visibility: hidden;
+}
+#wizard-conent-time .slider-labels li div {
+	display: block;
+        text-align: center;
+        position: relative;
+        top: -33px;
+}
+#wizard-conent-time .slider-labels li span {
+        position: relative;
+        top: -17px;
+        color: #d3d3d3;
+}
+
+#wizard-conent-time .dateslider-addYearsContainer {
+    position: relative;
+    top: -25px;
+}
+#wizard-conent-time .dateslider-addYearsContainer a{
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    margin-right: 2px;
+    border-radius: 6px;
+    background-color: #D5D2D2;  
+}
+#wizard-conent-time .dateslider-addYearsContainer a:hover{
+    background-color: #c9c9c9;  
+    cursor: pointer;
+}
+#wizard-conent-time .dateslider-addYearsContainer .addOneYearBefore{
+    background-image: url("../images/wizard/left1.png");
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+#wizard-conent-time .dateslider-addYearsContainer .addFiveYearBefore{
+    background-image: url("../images/wizard/left2.png");
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
 #wizard-conent-time .selected{
     color: #333333;
     background-color: #ebebeb;
     border-color: #adadad;
 }
+
+#wizard-conent-time #presets a.selected{
+    color: #333333;
+    background-color: #ebebeb;
+    border-color: #adadad;
+}
+
 #wizard-conent-time .dateInputFields{
     margin-top: 50px;
     margin-bottom: 50px;
@@ -318,6 +406,11 @@
     margin: 10px 5px;
     display: inline-block;
 }
+
+.last-selection-phenomenon-container{
+    display: none;
+}
+
 /*
     HEADLINES
 */
@@ -343,7 +436,7 @@
 }
 #place-header #place-toolbox .btnLocate{
     position: relative;
-    top: 180px;
+    top: 35px;
     right: 0px;
     z-index:5;
     width: 26px;
@@ -453,11 +546,92 @@
     display: inline-block;
     margin-right: 20px;
     width: 30%;
-    height: 200px;
+    height: 210px;
     background-image: url("../images/wizard/loader2.gif");
     background-position: center center;
     background-repeat: no-repeat;
 }
+
+.personalization-result-container{
+    display: none;
+}
+
+#wizard-conent-result #sim-results{
+}
+#wizard-conent-result #sim-results #output{
+    width: 100%;
+}
+
+#wizard-conent-result #sim-results #output div,
+#wizard-conent-result #other-user-results #output div{
+    width: 240px;
+    float: left;
+    height: 140px;
+    border: 1px solid #dedede;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    background-color: #efefef;
+    padding: 5px;
+    overflow: hidden;
+    position: relative;
+}
+#wizard-conent-result #sim-results #output div.ts-selected{
+    background-color: #fce0b0;
+    border: 1px solid red;
+}
+#wizard-conent-result #sim-results #output div h4,
+#wizard-conent-result #other-user-results #output div h4{
+    font-size: 13px;
+    font-weight: bold;
+    display: inline-block;
+    margin:0px;
+    padding:0px;
+}
+#wizard-conent-result #sim-results #output div p,
+#wizard-conent-result #other-user-results #output div p{
+    padding: 0px;
+    margin: 0px;  
+    font-weight: normal;  
+    font-size: 11px;
+    color: #808080;
+}
+
+#wizard-conent-result #sim-results #output div .noValue,
+#wizard-conent-result #other-user-results #output div .noValue{
+    background-image: url("../images/wizard/warning2.png");
+    background-repeat: no-repeat;
+    background-position: center 8px;
+    display: inline-block;
+    width: 16px;
+    height: 18px;
+}
+
+#wizard-conent-result #sim-results #output div p a,
+#wizard-conent-result #other-user-results #output div p a,
+#wizard-conent-result a[data-action=addSelectedTs] {
+    background-image: url("../images/wizard/chart.png");
+    background-repeat: no-repeat;
+    background-position: center center;
+    display: inline-block;
+    width: 25px;
+    height: 25px;
+    border-radius: 4px;
+    background-color: #428BCA;
+    cursor: pointer;
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+}
+#wizard-conent-result a[data-action=addSelectedTs]{
+    position: absolute;
+}
+#wizard-conent-result #sim-results #output div p a:hover,
+#wizard-conent-result a[data-action=addSelectedTs]:hover {
+    background-color: orange;
+}
+
+
+
 
 
 
@@ -476,7 +650,7 @@
             Navi
         */
         #wizard #wizard-nav li{
-            padding: 15px 0 15px 40px;
+            padding: 15px 0 15px 10px;
             font: bold 0.9em arial;
         }
 	.wizard-outline.active {
@@ -485,5 +659,23 @@
 	}
         .btnOutline{
             z-index: 105;
+        }
+        
+        #wizard-conent-time .tooltip{
+            display: none;
+        }
+        
+        #wizard-loading {
+            left: 40%;
+        }
+        
+        /*
+            Result
+        */
+        
+        #wizard-conent-result #sim-results #output div,
+        #wizard-conent-result #other-user-results #output div{
+            width: 100%;
+            display: block;
         }
 }
