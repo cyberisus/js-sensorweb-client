@@ -38,23 +38,31 @@ var WizardPlaceController = {
     
     markers         : [],
     stations        : [],
+    timeseries      : [],
+    outlineCircle   : '',
     allSelectedPhenomenaStations : [],
     selectionLayer  : "",
+    selectionCounter: 0,
     results         : [{'onstart': 0, 'onend': 0, 'diff':0}],
     
     init : function() {
 
-        $(document).ready(function() {     
+        $(document).ready(function() {  
+            WizardController.isLoading(false);   
+            WizardPlaceController.initNaviLayout();
             WizardPlaceController.createMap();
             WizardPlaceController.handleClickListener();
-            WizardPlaceController.initFromOutline();       
+   
+            // clear all
+            $.each(WizardPlaceController.markers, function( id, marker ) {
+                WizardPlaceController.mapi.removeLayer(marker);
+                WizardPlaceController.markers = [];
+            });    
+            
+            // do stuff
+            WizardPlaceController.selectionCounter = 0;
             WizardPlaceController.findStations();
-            
-            WizardPlaceController.allSelectedPhenomenaStations = [];
-            //WizardOutlineController.selectedStations = [];
-            //WizardPlaceController.stations = [];
-            //WizardPlaceController.allstations = [];
-            
+            WizardPlaceController.initFromOutline();         
         });
     },
     
@@ -77,6 +85,8 @@ var WizardPlaceController = {
                         if( WizardPlaceController.selectionLayer != "" ) 
                             WizardPlaceController.mapi.removeLayer(WizardPlaceController.selectionLayer);
                         WizardPlaceController.selectionLayer = layer;
+
+                       
                     // 
                     if (type === 'circle') {
                         // Do marker specific actions
@@ -88,15 +98,21 @@ var WizardPlaceController = {
                        
                         
                         WizardOutlineController.addPlaceRadius( place );  
-                        WizardPlaceController.updateMarkerResults( place );
+                        //WizardPlaceController.updateMarkerResults( place );
                         
+                        
+                        WizardPlaceController.findStations();
+                        
+                        /*
                         // Update result counter
                         console.log(WizardPlaceController.stations);
                         WizardOutlineController.selectedStations = [];
+                        WizardOutlineController.selectedTS = [];
                         WizardOutlineController.selectedStations = WizardPlaceController.stations;
-                        
+                        */
+                       
                         //WizardOutlineController.updateResultNumber(null,WizardOutlineController.selectedStations.length);
-                        $('.outline-resultnumber').text( WizardOutlineController.selectedStations.length );
+                        //$('.outline-resultnumber').text( WizardOutlineController.selectedStations.length );
                     } 
                     if (type === 'rectangle') {
                         console.log(layer); 
@@ -115,8 +131,8 @@ var WizardPlaceController = {
                     mapi.addLayer(layer);
                 });
             }, this);
-            L.control.scale().addTo(this.mapi);
             
+            L.control.scale().addTo(this.mapi);           
             
             var drawnItems = new L.FeatureGroup();
             this.mapi.addLayer(drawnItems);
@@ -124,20 +140,9 @@ var WizardPlaceController = {
             var drawControl = new L.Control.Draw({
                 position: 'topright',
                 draw: {
-                    polyline: {
-                        metric: true
-                    },
-                    polygon: {
-                        allowIntersection: false,
-                        showArea: true,
-                        drawError: {
-                            color: '#b00b00',
-                            timeout: 1000
-                        },
-                        shapeOptions: {
-                            color: '#bada55'
-                        }
-                    },
+                    polyline: false,
+                    polygon: false,
+                    rectangle: false,
                     circle: {
                         shapeOptions: {
                             color: '#662d91'
@@ -145,13 +150,10 @@ var WizardPlaceController = {
                     },
                     marker: false
                 },
-                edit: {
-                    featureGroup: drawnItems,
-                    edit: true,
-                    remove: true
-                }
+                edit: false
             });
             this.mapi.addControl(drawControl);
+            L.drawLocal.draw.toolbar.buttons.circle = 'Select your favorite timeseries!';
             
             new L.Control.GeoSearch({
                 id: 123,
@@ -165,7 +167,6 @@ var WizardPlaceController = {
                 provider: new L.GeoSearch.Provider.OpenStreetMap(),
                 zoomLevel: 13
             }).addTo(this.mapi);
-            
 
         }
     },
@@ -211,22 +212,56 @@ var WizardPlaceController = {
         
         */
        
-        WizardPlaceController.findPhenomenForStation(WizardPhenomenController.allStations);
+       // remove all markers from map
+        $.each(WizardPlaceController.markers, function( id, marker ) {
+            WizardPlaceController.mapi.removeLayer(marker);
+            WizardPlaceController.markers = [];
+        });
+        WizardPlaceController.selectionCounter = 0;
+       
+        // ausgangssituation 
+        WizardPlaceController.stations = [];
+        WizardOutlineController.selectedStations = [];
+        WizardOutlineController.selectedTS = [];
+        
+        WizardPlaceController.allSelectedPhenomenaStations = [];
+        WizardPlaceController.allSelectedPhenomenaStations = WizardPhenomenController.cacheAllStations.slice();
+        
+        console.log("allSelectedPhenomenaStations: " + WizardPlaceController.allSelectedPhenomenaStations.length);
+        if (WizardPlaceController.allSelectedPhenomenaStations.length > 0 && $('.outline-resultnumber').text() != "0"){
+            WizardController.isLoading(true);
+            WizardPlaceController.findPhenomenForStation( WizardPlaceController.allSelectedPhenomenaStations ); 
+        } else {
+             WizardController.setWarnings('noPhenomenonSelected');
+        }
+       
+        
     },
     
     findPhenomenForStation : function(stations){     
         var provider = Status.get('provider');
         var apiUrl = Status.get('provider').apiUrl;
+        var i = 1;    
 
+        // reset counter to count new
+        WizardPlaceController.selectionCounter
         $.each(stations, function(id, station) {
-            var id = station.properties.id;
+            var sid = station.properties.id;
             // set coordinates from station
             var coordinates = {'lat' : station.geometry.coordinates[1], 'lng' : station.geometry.coordinates[0]};   
             // Load station with timeseries info    
-            Rest.stations(id, apiUrl).done($.proxy(function(results){
+            Rest.stations(sid, apiUrl).done($.proxy(function(results){
                 // Add marker to map
-                WizardPlaceController.findTimeseries(results, coordinates);  
+                WizardPlaceController.findTimeseries(results, coordinates); 
+                if(i == stations.length){    
+                    WizardController.isLoading(false);
+                    $('.outline-resultnumber').text(WizardPlaceController.selectionCounter);
+                    WizardOutlineController.selectedStations = WizardPlaceController.stations;
+                }
+                i++;
             }));
+            
+            
         });        
     },
     
@@ -236,37 +271,79 @@ var WizardPlaceController = {
         //This result contains the geometry point of the staion and the phenomen label
         $.each(results.properties.timeseries, function(id, result) {
             // add marker
-            WizardPlaceController.addMarkerToMap(result, coordinates, stationID); 
+            WizardPlaceController.addMarkerToMap(result, coordinates, stationID, id); 
         });
     },
     
-    addMarkerToMap: function(timeserie, coordinates, stationID) {
+    addMarkerToMap: function(timeserie, coordinates, stationID, tsID) {
+             
+        // set station
         var station = {};
         station.id = stationID;
         station.coordinates = coordinates;
         station.phenomenID = timeserie.phenomenon.id;
         station.phenomenLabel = timeserie.phenomenon.label;
+        station.tsID = tsID;
         station.timeserie = timeserie;
         //
         var phenomID = timeserie.phenomenon.id;
         var phenomLable = timeserie.phenomenon.label;
         // check if the stations contains the selected phenomena 
         if ($.inArray(phenomLable, WizardOutlineController.selectedPhenomena) !== - 1) {
+            
             // Set Marker to map
-            var circle = L.circle([coordinates.lat, coordinates.lng], '150', {
+            if(WizardOutlineController.selectedPlaceType == "circle"){
+                
+                if( WizardPlaceController.isInRadius( WizardOutlineController.selectedRadius, coordinates ) ){
+                    var circle = L.circle([coordinates.lat, coordinates.lng], '150', {
+                        color: 'yellow',
+                        fillColor: '#f03',
+                        fillOpacity: 0.5
+                    }).addTo(WizardPlaceController.mapi);
+                    
+                    WizardPlaceController.markers.push(circle);
+                    // chache stations for result
+                    WizardPlaceController.stations.push(station)
+                    WizardOutlineController.selectedStations.push(station);
+                    WizardOutlineController.selectedTS.push(tsID);
+                    
+                    // count number of results in selection
+                    WizardPlaceController.selectionCounter = WizardPlaceController.selectionCounter + 1;
+ 
+                } else {
+                    var circle = L.circle([coordinates.lat, coordinates.lng], '150', {
+                        color: 'blue',
+                        fillColor: '#f03',
+                        fillOpacity: 0.5
+                    }).addTo(WizardPlaceController.mapi);
+                    WizardPlaceController.markers.push(circle);
+                    // chache stations for result
+                    //WizardOutlineController.selectedStations.push(station);
+                    //WizardOutlineController.selectedTS.push(tsID);
+                }
+                
+            } else {
+                
+                var circle = L.circle([coordinates.lat, coordinates.lng], '150', {
                     color: 'blue',
                     fillColor: '#f03',
                     fillOpacity: 0.5
-            }).addTo(WizardPlaceController.mapi);
-            WizardPlaceController.markers.push(circle);
-            // chache stations for result
-            WizardOutlineController.selectedStations.push(station);
-            WizardPlaceController.allSelectedPhenomenaStations.push(station);
-            //WizardPlaceController.allstations.push(station);
+                }).addTo(WizardPlaceController.mapi);
+                WizardPlaceController.markers.push(circle);
+                // chache stations for result
+                WizardPlaceController.stations.push(station)
+                WizardOutlineController.selectedStations.push(station);
+                WizardOutlineController.selectedTS.push(tsID);
+                
+                WizardPlaceController.selectionCounter = WizardPlaceController.selectionCounter + 1;
+
+                
+            } 
         }
-        
+
     },
     
+    /*
     updateMarkerResults :  function( place ){
         // remove all markers from map
         $.each(WizardPlaceController.markers, function( id, marker ) {
@@ -276,7 +353,7 @@ var WizardPlaceController = {
         // check for new markers in radius - using cache objects
         var newStations = [];
         var newOptinalStations = [];
-        var OPT_STATIONS_M = 3000;      // 3km
+        var OPT_STATIONS_M = 1000000;      //  1000 km
         WizardPlaceController.stations = [];
         
         $.each(WizardPlaceController.allSelectedPhenomenaStations, function( id, station ) {
@@ -293,6 +370,7 @@ var WizardPlaceController = {
             if(currentDist <= maxDist){
                 newStations.push(station);   
                 WizardPlaceController.stations.push(station);
+                WizardOutlineController.selectedTS.push(station.tsID);
             } else if (currentDist > maxDist && currentDist <= (maxDist + OPT_STATIONS_M)){
                 newOptinalStations.push(station);
             }
@@ -300,8 +378,8 @@ var WizardPlaceController = {
         // create new marker on map for results
         $.each(newStations, function( id, station ) {
             // draw results
-            var circle = L.circle([station.coordinates.lat, station.coordinates.lng], '100', {
-                    color: 'red',
+            var circle = L.circle([station.coordinates.lat, station.coordinates.lng], '150', {
+                    color: 'yellow',
                     fillColor: '#f03',
                     fillOpacity: 0.5
             }).addTo(WizardPlaceController.mapi);
@@ -310,8 +388,8 @@ var WizardPlaceController = {
         // create new marker on map for optional results
         $.each(newOptinalStations, function( id, station ) {
             // draw results
-            var circle = L.circle([station.coordinates.lat, station.coordinates.lng], '100', {
-                    color: 'yellow',
+            var circle = L.circle([station.coordinates.lat, station.coordinates.lng], '150', {
+                    color: 'blue',
                     fillColor: '#f03',
                     fillOpacity: 0.5
             }).addTo(WizardPlaceController.mapi);
@@ -319,6 +397,7 @@ var WizardPlaceController = {
         });
         
     },
+    */
     
     /* ------------ */
 
@@ -326,28 +405,53 @@ var WizardPlaceController = {
         $('[data-action="placeLocate"]').click(function() {
                 WizardPlaceController.locateUser();
         });
+        
+        $('.btnBack').click(function() {
+            $('.wizard-pager').remove();
+            $('#wizard-content').empty();
+            WizardController.loadWizardPhenomenPage();
+            //WizardController.setActiveNav( $('#wizard-nav li.phenomen') );
+            //WizardTimeController.setLastUserSearch();
+        });
+        
+        
         $('.btnNext').click(function() {
-                // Update result counter
+              
+            // Check if something was selected
+            if(WizardPlaceController.stations.length == 0){
+                
+            }
+            
+            
+            // Update result counter
                 WizardOutlineController.currentResults = $('.outline-resultnumber').text();
                 WizardPlaceController.results.onend = WizardOutlineController.currentResults;
                 var diff = WizardPlaceController.results.onstart - WizardPlaceController.results.onend;
                 WizardPlaceController.results.diff = diff;
                 WizardOutlineController.currentResults = $('.outline-resultnumber').text();
-                // Load new page
+                      
+            // Load new page
                 $('.wizard-pager').remove();
                 $('#wizard-content').empty();
                 WizardController.loadWizardResultPage();
-                WizardController.setActiveNav( $('#wizard-nav li.result') );
+                
+            // Save search request to DB
+                Personalization.saveSearchRequest();
+                
         });
         $('.leaflet-draw-draw-circle').on('click', function() {
-            // remove all markers from map
+            /*// remove all markers from map
             $.each(WizardPlaceController.markers, function( id, marker ) {
                 WizardPlaceController.mapi.removeLayer(marker);
                 WizardPlaceController.markers = [];
             });
+            */
+           /*
             if( WizardPlaceController.selectionLayer != "" ) 
                 WizardPlaceController.mapi.removeLayer(WizardPlaceController.selectionLayer);
+            */
             // Load stations from cache
+            /*
             $.each(WizardPlaceController.allSelectedPhenomenaStations, function(id, station){
                 var circle = L.circle([station.coordinates.lat, station.coordinates.lng], '150', {
                     color: 'blue',
@@ -356,7 +460,11 @@ var WizardPlaceController = {
                 }).addTo(WizardPlaceController.mapi);
                 WizardPlaceController.markers.push(circle);
             });
+            */
             $('.outline-resultnumber').text( WizardPlaceController.results.onstart );
+            
+            // Remove outline Cirle from Map
+            WizardPlaceController.mapi.removeLayer(  WizardPlaceController.outlineCircle );
             
         });
     },
@@ -366,26 +474,69 @@ var WizardPlaceController = {
         WizardPlaceController.results.onstart = WizardOutlineController.currentResults;
       
         if(WizardOutlineController.selectedPlaceType !== ""){
-            
-            if(WizardOutlineController.selectedPlaceType == "circle"){
+            /*
+            // remove all markers from map
+            $.each(WizardPlaceController.markers, function( id, marker ) {
+                WizardPlaceController.mapi.removeLayer(marker);
+                WizardPlaceController.markers = [];
+            });
+            if( WizardPlaceController.selectionLayer != "" ) 
+                WizardPlaceController.mapi.removeLayer(WizardPlaceController.selectionLayer);
+
+            */
+           
+            if (WizardOutlineController.selectedPlaceType == "circle") {
+
                 var elem = WizardOutlineController.selectedRadius;
-                /*
-                var circle = L.circle([elem.lat, elem.lng], elem.radius, {
-                    color: 'red',
+                WizardPlaceController.outlineCircle = L.circle([elem.lat, elem.lng], elem.radius, {
+                    color: '#f03',
                     fillColor: '#f03',
                     fillOpacity: 0.5
-                }).addTo(WizardPlaceController.map);
+                }).addTo(WizardPlaceController.mapi);
+
+                /*
+                WizardPlaceController.updateMarkerResults(elem);
+                // Update result counter
+                console.log(WizardPlaceController.stations);
+                WizardOutlineController.selectedStations = [];
+                WizardOutlineController.selectedTS = [];
+                WizardOutlineController.selectedStations = WizardPlaceController.stations;
+
+                //WizardOutlineController.updateResultNumber(null,WizardOutlineController.selectedStations.length);
+                $('.outline-resultnumber').text(WizardOutlineController.selectedStations.length);
                 */
             }
-            
-            if(WizardOutlineController.selectedPlaceType == "rectangle"){
+
+            if (WizardOutlineController.selectedPlaceType == "rectangle") {
                 // stuff
-            }
-            
+            }  
         }
-        
-        
+    },
+    
+    initNaviLayout: function(){
+        $('#wizard #wizard-nav').find('.active').removeClass('active');
+        $('#wizard #wizard-nav').find('.active-last').removeClass('active-last');
+        $('#wizard #wizard-nav .time').addClass('active');  
+        $('#wizard #wizard-nav .phenomen').addClass('active');  
+        $('#wizard #wizard-nav .place').addClass('active-last');  
+    }, 
+    
+    isInRadius: function(center, coordinates) {
+        var centerLat = center.lat;
+        var centerLng = center.lng;
+        var stationLat = coordinates.lat;
+        var stationLng = coordinates.lng;
+        var dx = 71.5 * (centerLng - stationLng);
+        var dy = 111.3 * (centerLat - stationLat);
+        var maxDist = center.radius;
+        var currentDist = Math.sqrt((dx * dx) + (dy * dy)) * 1000; // in meter
+        if (currentDist <= maxDist) {
+            return true;
+        } else {
+            return false;
+        }
     }
+            
     
 }
 

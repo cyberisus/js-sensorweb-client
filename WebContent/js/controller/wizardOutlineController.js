@@ -33,12 +33,16 @@
 
 var WizardOutlineController = {
     
-    selectedDate        : [{'from' : ''},{'till' : ''}, {'mode' : ''}],
+    selectedDate        : {'from' : '','till' : '', 'mode' : ''},
     selectedPhenomena   : [],
+    selectedPhenomenaID : [],
     selectedStations    : [],
+    selectedTS          : [],
     selectedPlaceType   : "",
     selectedCity        : "",
-    selectedRadius      : [{lat: ''},  {lng: ''} ,  {radius: ''}],
+    //selectedRadius      : [{lat: ''},  {lng: ''} ,  {radius: ''}],
+    selectedRadius      : {'lat' : '',  'lng': '' ,  'radius': ''},
+    outlineMapCircle    : '',
     selectedBBox        : [],
     currentResults      : 0,
     
@@ -84,8 +88,9 @@ var WizardOutlineController = {
         $('.datebox-end').text(this.selectedDate.till);
     },
     
-    addPhenomena : function(phenomena) {
+    addPhenomena : function(phenomena, phenomenonID) {
         this.selectedPhenomena = phenomena;
+        this.selectedPhenomenaID = phenomenonID;
         $('.phenomenbox-phenomena').empty();
         if( phenomena.length > 0) {
             $.each( phenomena, function( i, val ){
@@ -97,7 +102,7 @@ var WizardOutlineController = {
     },
     
     addPlaceRadius : function(place){
-        this.selectedPlaceType = "radius";
+        this.selectedPlaceType = "circle";
         this.selectedRadius.lat = place.lat;
         this.selectedRadius.lng = place.lng;
         this.selectedRadius.radius = place.radius;
@@ -119,9 +124,9 @@ var WizardOutlineController = {
     
     
     editSelectedFeatures : function(){
-        $('.edit-datebox').on('click', function(){ $('.wizard-pager').remove(); WizardController.loadWizardTimePage(); });
-        $('.edit-phenomenbox').on('click', function(){ $('.wizard-pager').remove(); WizardController.loadWizardPhenomenPage(); });
-        $('.edit-placebox').on('click', function(){ $('.wizard-pager').remove(); WizardController.loadWizardPlacePage(); });
+        $('.edit-datebox').on('click', function(){ $('.wizard-pager').remove(); $('#wizard-content').empty();WizardController.loadWizardTimePage(); WizardTimeController.setLastUserSearch();});
+        $('.edit-phenomenbox').on('click', function(){ $('.wizard-pager').remove(); $('#wizard-content').empty();WizardController.loadWizardPhenomenPage(); });
+        $('.edit-placebox').on('click', function(){ $('.wizard-pager').remove(); $('#wizard-content').empty();WizardController.loadWizardPlacePage(); });
     }
    
 }

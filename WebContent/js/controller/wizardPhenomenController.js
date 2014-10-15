@@ -33,12 +33,14 @@
 
 var WizardPhenomenController =  {
     
-    resultcount : parseInt(0),
-    allStations : [],
-    results     : [{'onstart': 0, 'onend': 0, 'diff':0}],
+    resultcount         : parseInt(0),
+    cacheAllStations    : [],
+    selectedStaionsInPhe: [],
+    results             : [{'onstart': 0, 'onend': 0, 'diff':0}],
     
     init : function() {
-        console.log("result " + this.resultcount);
+        WizardController.isLoading(false);  
+        WizardPhenomenController.initNaviLayout();
         WizardController.isLoading(true);
         var provider = Status.get('provider');
         Rest.phenomena(null, provider.apiUrl, {
@@ -46,11 +48,27 @@ var WizardPhenomenController =  {
         }).done($.proxy(this.fillPhenomenaList, this));
         this.initButtons();
         
+        
+        
         // set start counter
         this.results.onstart = WizardOutlineController.currentResults;
         //
         WizardOutlineController.selectedStations = [];
+        WizardPhenomenController.selectedStaionsInPhe = [];
+        WizardPhenomenController.cacheAllStations = [];
+
+        
         //console.log("onStart: " + this.results.onstart + " / onEnd: " + this.results.onend + " Diff: " + this.results.diff);
+        
+        
+        
+    },
+    
+    initNaviLayout: function(){
+        $('#wizard #wizard-nav').find('.active').removeClass('active');
+        $('#wizard #wizard-nav').find('.active-last').removeClass('active-last');
+        $('#wizard #wizard-nav .time').addClass('active');     
+        $('#wizard #wizard-nav .phenomen').addClass('active-last');  
     },
     
     fillPhenomenaList : function(results) {
@@ -67,6 +85,8 @@ var WizardPhenomenController =  {
            
         }));
         
+        
+        
         this.handleChanges();
         this.loadStations();
         
@@ -76,10 +96,21 @@ var WizardPhenomenController =  {
         // Add all selected phenomena to array and send to OutlineController
         $('#wizard-conent-phenomen .phenomena-list input').change( function() {
             var phenomena = [];
+            var phenomenonID = [];
+            
+            
             $("#wizard-conent-phenomen .phenomena-list input:checked").each(function(){
                 phenomena.push($(this).val());
+                phenomenonID.push($(this).attr('data-id'));
+                console.log("Push change to Arrays");
             });
-            WizardOutlineController.addPhenomena( phenomena );
+            WizardOutlineController.addPhenomena( phenomena , phenomenonID);
+            console.log(WizardOutlineController.selectedPhenomena);
+            console.log(WizardOutlineController.selectedPhenomenaID);
+            console.log(WizardOutlineController.currentResults);
+            
+            // update stations in result
+            WizardPhenomenController._createStationObjectsAndSave(WizardPhenomenController.cacheAllStations);
         });
         // Add warning if there are no stations
         $('#wizard-conent-phenomen .phenomena-list input').change( function() {
@@ -103,22 +134,24 @@ var WizardPhenomenController =  {
     
     initButtons : function(){
         $('#wizard-buttons .btnNext').on('click', function() {
+            /*
             // Update result counter
             WizardOutlineController.currentResults = $('.outline-resultnumber').text();
             WizardPhenomenController.results.onend = WizardOutlineController.currentResults;
             var diff = WizardPhenomenController.results.onstart - WizardPhenomenController.results.onend;
             WizardPhenomenController.results.diff = diff;
+            */
             // Load new page
             $('.wizard-pager').remove();
             $('#wizard-content').empty();
             WizardController.loadWizardPlacePage();
-            WizardController.setActiveNav( $('#wizard-nav li.place') );
         });
         $('#wizard-buttons .btnBack').on('click', function() {
             $('.wizard-pager').remove();
             $('#wizard-content').empty();
             WizardController.loadWizardTimePage();
-            WizardController.setActiveNav( $('#wizard-nav li.time') );
+            //WizardController.setActiveNav( $('#wizard-nav li.time') );
+            WizardTimeController.setLastUserSearch();
         });
         $('#wizard-buttons .btnSkip').on('click', function() {
             //
@@ -130,8 +163,8 @@ var WizardPhenomenController =  {
         
     },
     
-    updateCounter : function(opt, nr){   
-        var number = parseInt( $('.outline-resultnumber').text());
+    updateCounter: function(opt, nr) {
+        var number = parseInt($('.outline-resultnumber').text());
         var num = parseInt(nr);
         switch (opt) {
             case 'add':
@@ -140,7 +173,12 @@ var WizardPhenomenController =  {
             case 'sub':
                 $('.outline-resultnumber').text(number - num);
                 break;
-        } 
+        }
+        // Update result counter
+        WizardOutlineController.currentResults = $('.outline-resultnumber').text();
+        WizardPhenomenController.results.onend = WizardOutlineController.currentResults;
+        var diff = WizardPhenomenController.results.onstart - WizardPhenomenController.results.onend;
+        WizardPhenomenController.results.diff = diff;
     },
     
     loadStations : function(){
@@ -155,13 +193,11 @@ var WizardPhenomenController =  {
     
     saveStations : function (result){
         // get through stations and take station.id
-        console.log(result);
+        
         var stations = [];
-        
-        
-        //
-        WizardPhenomenController.allStations = result.slice();
-        WizardOutlineController.selectedStations = result.slice();
+
+        // Qualitativ nicht so viele Informationen wie im PlaceController -> neu s. Zeile 217
+        //WizardOutlineController.selectedStations = result.slice();
         
         $.each(result, function(id, elem) {
             // Load timeseries with phenomen labels
@@ -173,28 +209,89 @@ var WizardPhenomenController =  {
 
         this.loadPhenomena(stations);
         
+        
+    },
+    
+    _createStationObjectsAndSave: function(results) {
+        
+        // clear selection
+        WizardPhenomenController.selectedStaionsInPhe = [];
+        WizardOutlineController.selectedStations = [];
+        
+        // add new stations
+        $.each(results, function(id, stationN) {
+            
+            
+
+            var tsObj = stationN.properties.timeseries;
+            var timeseriesInStation = Object.keys(tsObj);
+            // set station
+            for (var j = 0; j < timeseriesInStation.length; j++)
+            {
+
+                //console.log(results.properties.timeseries[ timeseriesInStation[i] ]);
+                //console.log(timeseriesInStation[i]);
+                //console.log(results.properties.timeseries[timeseriesInStation[i]].phenomenon.label);
+
+                var phenomenaLabel = stationN.properties.timeseries[timeseriesInStation[j]].phenomenon.label;
+                if ($.inArray(phenomenaLabel, WizardOutlineController.selectedPhenomena) !== -1) {
+                    // create station object
+                    var station = {};
+                    station.id = stationN.properties.id;
+                    station.coordinates = stationN.geometry.coordinates;
+                    station.phenomenID = stationN.properties.timeseries[timeseriesInStation[j]].phenomenon.id;
+                    station.phenomenLabel = stationN.properties.timeseries[timeseriesInStation[j]].phenomenon.label;
+                    station.tsID = timeseriesInStation[j];
+                    station.timeserie = stationN.properties.timeseries[ timeseriesInStation[j] ];
+                    // add timeseries to outline
+                    WizardOutlineController.selectedStations.push(station);
+                    WizardPhenomenController.selectedStaionsInPhe.push(station);
+                }
+            }
+
+        });
+        
     },
     
     loadPhenomena : function(stations){
+        var dfd = $.Deferred();
         var apiUrl = Status.get('provider').apiUrl;
         var phenomena = [];
-         console.log("loadPhenomena");
+        var count = stations.length;
+        var i = 1;
+        
+            
         $.each(stations, function(id, elem) {
             // Load timeseries with phenomen labels
             phenomena.push(elem);                  
             Rest.stations(elem, apiUrl).done($.proxy(function(results){
+
+                // cache all statios with infos about id, coord and timeseries
+                WizardPhenomenController.cacheAllStations.push(results);
+
                 WizardPhenomenController.loadTsFromStation(results);
+                
+                if(i == count){
+                    // looking for a last search
+                    WizardPhenomenController.setLastUserSearch();
+                    // Create stations objects from cache
+                    WizardController.isLoading(false);
+                    WizardPhenomenController._createStationObjectsAndSave(WizardPhenomenController.cacheAllStations);
+                };
+                
+                i++;
             }));
             
+            
         });
-        console.log("After laodPhenomena");
+
+        
         
     },
     
     loadTsFromStation : function(results){
         // get all phenomena
-            
-            
+
             $.each(results.properties.timeseries, function(id, elem) {
                 var phenomID = elem.phenomenon.id;
                 var phenomLable = elem.phenomenon.label;
@@ -212,16 +309,38 @@ var WizardPhenomenController =  {
                         .find('label[for="' + phenomID + '"]')
                         .text(phenomLable + ' (+' + number + ')');
 
-                this.resultcount = this.resultcount + 1;
+                this.resultcount = this.resultcount + 1;               
+               
             });
+
+    },
+    
+    
+    setLastUserSearch: function(){
+        var searchObj = Personalization.lastSearch;  
+        if($.isEmptyObject(searchObj) || searchObj.search_id < 1){
+            $('.last-selection-phenomenon-container').fadeIn('slow');
+            $('#lastphenomenonselection').append('It is your first search.');
+        } else{
+            $('.last-selection-phenomenon-container').fadeIn('slow');
+            var results = searchObj.phenomenon;
+            var phenomena = results.split(',');
+            $.each(phenomena, function( id, phe ){
+                 var pheName = $('#wizard-conent-phenomen .phenomena-list input[data-id="' + phe + '"]').val();
+                 $('#lastphenomenonselection')
+                         .append('<a value="'+phe+'" class="btn btn-default multiline-button preset-btn">' + pheName + '</a>');
+            }); 
             
-            console.log("max count: " + this.resultcount);
-            // Update max Results for selection
-            //WizardOutlineController.updateResultNumber(this.resultcount);
-            //
-            // Does not work - why?
-            WizardController.isLoading(false);
-        
+            
+            $('#lastphenomenonselection a').on('click', function() {
+                $('#wizard-conent-phenomen .phenomena-list input[data-id="' + $(this).attr('value') + '"]').trigger('click');
+                
+                /*if(!$('#wizard-conent-phenomen .phenomena-list input[data-id="' + $(this).attr('value') + '"]').is(':checked')){
+                    $('#wizard-conent-phenomen .phenomena-list input[data-id="' + $(this).attr('value') + '"]').prop("checked", true).change();
+                } */ 
+            });
+           
+        }   
     }
 
 }

@@ -38,11 +38,52 @@ var WizardController = {
     timespan : [ {from: ''},  {till: ''} ],
     
     init: function () {
+        this.startPersonalization();
         this.loadDefaultWizardLayout();
         this.loadWizardTimePage();
         this.loadWizardOutlinePage();
         this.bindNavigation();
+        
+        
         WizardOutlineController.init();
+        
+        
+        
+        
+    },
+    
+    startPersonalization: function() {
+        
+        // save user data to db
+        $.when( Personalization.getUserIp() ).then(function(result) {
+            var user = Personalization.createUserObject(result);
+            Personalization.saveUserData( user );
+        });
+        
+        
+         //get last parameters if user was here before
+        if(Personalization.supportLocalStorage){
+            if(localStorage["sensorweb-wizard-user"] !== "undefined"){
+                var userid = localStorage.getItem("sensorweb-wizard-user"); 
+                // Get Object and wait till you get it
+                Personalization.getLastSearchFromUser( userid ).done(function(obj){
+                    Personalization.lastSearch = obj;
+                    // Time
+                    WizardTimeController.setLastUserSearch();  
+                    WizardTimeController.initOnChangeMethods();
+                    
+                    
+                });
+                
+            } else{
+                console.log('ERR: localStorage > no item');
+            }
+            
+        } else {
+            console.log('ERR: localStorage not supported!');
+        }
+        
+
     },
 
     loadDefaultWizardLayout: function() {
@@ -50,7 +91,7 @@ var WizardController = {
 	$('#wizard').append(html);
     },
     
-    loadWizardTimePage : function () {
+    loadWizardTimePage : function (startYear, endYear) {
        
         var html = Template.createHtml("wizard-time", {
             id : "TestID",
@@ -58,7 +99,7 @@ var WizardController = {
 	});
         
 	$('#wizard-content').append(html);
-        WizardTimeController.init();
+        WizardTimeController.init(startYear, endYear);
     },
     
     loadWizardPhenomenPage : function () {
@@ -104,6 +145,7 @@ var WizardController = {
             
             if(page == "wizard-time"){             
                 WizardController.loadWizardTimePage()
+                WizardTimeController.setLastUserSearch();
             } else if (page == "wizard-phenomen"){
                 WizardController.loadWizardPhenomenPage();
             } else if (page == "wizard-place"){
@@ -114,7 +156,7 @@ var WizardController = {
                 alert('no more pages');
             }
 
-            WizardController.setActiveNav( $(this) );
+            //WizardController.setActiveNav( $(this) );
         })
     },
     
@@ -125,9 +167,21 @@ var WizardController = {
     
     isLoading : function(bool){
         if(bool){
-           $('#wizard-loading').animate({'height': '80px', 'display': 'inline-block'});
+           $('#wizard-loading').fadeIn('slow');
+           /*
+           setTimeout( function() {
+               $('#wizard-loading').addClass('error');
+               $('#wizard-loading').append('<p>An unexpected error occurred!</p>');
+               setTimeout( function(){
+                   $('#wizard-loading p').remove();
+                   $('#wizard-loading').removeClass('error'); 
+                   $('#wizard-loading').fadeOut('fast'); 
+                    
+               },35000);
+           }, 10000);
+            */
         } else {
-           $('#wizard-loading').animate({'height': '10px', 'display': 'none'});
+           $('#wizard-loading').fadeOut('slow');
         }
       
         
@@ -149,6 +203,18 @@ var WizardController = {
             case 'selectionWithNoStation':
                     $('#wizard-conent-phenomen .phenomena-list').before(
                         '<p class="wizard-warningbox">There are no stations for your selection.<p>'
+                    );
+                    break;
+                    
+            case 'no-parameters-selected':
+                    $('#wizard-conent-result').before(
+                        '<p class="wizard-warningbox">You must select at least a time range and one phenomenon<p>'
+                    );
+                    break;
+                    
+            case 'noPhenomenonSelected':
+                    $('#wizard-conent-place').before(
+                        '<p class="wizard-warningbox">You must select at least one phenomenon<p>'
                     );
                     break;
         }
